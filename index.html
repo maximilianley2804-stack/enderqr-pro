@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EnderQR Pro</title>
+    <link rel="stylesheet" href="style.css" />
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/qr-code-styling@1.9.2/lib/qr-code-styling.js"
+    ></script>
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"
+    ></script>
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"
+    ></script>
+    <script defer src="script.js"></script>
+  </head>
+  <body>
+    <div class="bg-orb orb-left" aria-hidden="true"></div>
+    <div class="bg-orb orb-right" aria-hidden="true"></div>
+
+    <div class="app-shell">
+      <header class="panel app-header">
+        <div class="brand-block">
+          <p class="eyebrow" data-i18n="app.eyebrow">Design Suite</p>
+          <h1 data-i18n="app.title">EnderQR Pro</h1>
+          <p class="subtitle" data-i18n="app.subtitle">
+            Create branded QR codes with live styling, logos, captions, editable
+            sharing files, and one-click exports.
+          </p>
+        </div>
+
+        <div class="header-tools">
+          <div class="header-tool language-tool">
+            <label for="languageSwitcher" data-i18n="header.languageLabel"
+              >Language</label
+            >
+            <select id="languageSwitcher" aria-label="Language">
+              <option value="en">English</option>
+              <option value="de">Deutsch</option>
+            </select>
+          </div>
+
+          <button
+            type="button"
+            id="themeToggle"
+            class="theme-toggle"
+            aria-pressed="false"
+            data-i18n="header.themeLight"
+          >
+            Light Mode
+          </button>
+        </div>
+
+        <div
+          id="libraryWarning"
+          class="library-warning hidden"
+          role="alert"
+          data-i18n="errors.libraryWarning"
+        >
+          Some CDN libraries failed to load. QR rendering or export may be
+          unavailable until you reconnect to the internet.
+        </div>
+      </header>
+
+      <main class="workspace">
+        <section class="panel editor-panel" aria-labelledby="editorHeading">
+          <div class="panel-title-row">
+            <h2 id="editorHeading" data-i18n="sections.editor">Editor Controls</h2>
+          </div>
+
+          <form id="editorForm" novalidate>
+            <fieldset class="control-section">
+              <legend data-i18n="legend.project">Project</legend>
+
+              <label for="projectName" data-i18n="labels.projectName"
+                >Project Name</label
+              >
+              <input
+                type="text"
+                id="projectName"
+                maxlength="80"
+                placeholder="Summer Campaign Landing Page"
+                data-i18n-placeholder="placeholders.projectName"
+              />
+              <small class="hint" data-i18n="hints.projectName">
+                Used for saved projects and exported file names.
+              </small>
+
+              <label for="contentType" data-i18n="labels.contentType"
+                >Content Type</label
+              >
+              <select id="contentType">
+                <option value="url" data-i18n="options.contentType.url">URL</option>
+                <option value="text" data-i18n="options.contentType.text">
+                  Plain Text
+                </option>
+                <option value="phone" data-i18n="options.contentType.phone">
+                  Phone Number
+                </option>
+                <option value="email" data-i18n="options.contentType.email">
+                  Email Address
+                </option>
+              </select>
+
+              <label for="qrContent" data-i18n="labels.qrContent">QR Content</label>
+              <textarea
+                id="qrContent"
+                rows="3"
+                placeholder="https://example.com"
+                data-i18n-placeholder="placeholders.qrContentUrl"
+              ></textarea>
+              <p id="contentValidationHint" class="validation-hint"></p>
+            </fieldset>
+
+            <fieldset class="control-section">
+              <legend data-i18n="legend.qrStyle">QR Styling</legend>
+
+              <div class="split-grid">
+                <div>
+                  <label for="fgColor" data-i18n="labels.foreground"
+                    >Foreground</label
+                  >
+                  <input type="color" id="fgColor" />
+                </div>
+                <div>
+                  <label for="bgColor" data-i18n="labels.background"
+                    >Background</label
+                  >
+                  <input type="color" id="bgColor" />
+                </div>
+              </div>
+
+              <label for="themePreset" data-i18n="labels.themePreset"
+                >Theme Preset</label
+              >
+              <select id="themePreset">
+                <option value="ocean" data-i18n="options.theme.ocean">
+                  Ocean Ink
+                </option>
+                <option value="forest" data-i18n="options.theme.forest">
+                  Forest Slate
+                </option>
+                <option value="mono" data-i18n="options.theme.mono">
+                  Classic Mono
+                </option>
+                <option value="sunset" data-i18n="options.theme.sunset">
+                  Sunset Coral
+                </option>
+                <option value="custom" data-i18n="options.theme.custom">
+                  Custom
+                </option>
+              </select>
+
+              <label for="qrSize" data-i18n="labels.qrSize">QR Size</label>
+              <div class="range-row">
+                <input type="range" id="qrSize" min="180" max="620" step="10" />
+                <output id="qrSizeValue">300 px</output>
+              </div>
+
+              <label for="qrPadding" data-i18n="labels.qrPadding"
+                >Quiet Zone / Padding</label
+              >
+              <div class="range-row">
+                <input type="range" id="qrPadding" min="0" max="44" step="1" />
+                <output id="qrPaddingValue">16 px</output>
+              </div>
+
+              <label for="dotStyle" data-i18n="labels.dotStyle"
+                >Module Style</label
+              >
+              <select id="dotStyle">
+                <option value="rounded" data-i18n="options.dotStyle.rounded">
+                  Rounded
+                </option>
+                <option value="dots" data-i18n="options.dotStyle.dots">Dots</option>
+                <option value="classy" data-i18n="options.dotStyle.classy">
+                  Classy
+                </option>
+                <option
+                  value="classy-rounded"
+                  data-i18n="options.dotStyle.classyRounded"
+                >
+                  Classy Rounded
+                </option>
+                <option value="square" data-i18n="options.dotStyle.square">
+                  Square
+                </option>
+                <option
+                  value="extra-rounded"
+                  data-i18n="options.dotStyle.extraRounded"
+                >
+                  Extra Rounded
+                </option>
+              </select>
+
+              <label for="cornerStyle" data-i18n="labels.cornerStyle"
+                >Corner Style</label
+              >
+              <select id="cornerStyle">
+                <option
+                  value="extra-rounded"
+                  data-i18n="options.cornerStyle.extraRounded"
+                >
+                  Extra Rounded
+                </option>
+                <option value="square" data-i18n="options.cornerStyle.square">
+                  Square
+                </option>
+                <option value="dot" data-i18n="options.cornerStyle.dot">Dot</option>
+              </select>
+            </fieldset>
+
+            <fieldset class="control-section">
+              <legend data-i18n="legend.logo">Center Logo</legend>
+
+              <label for="logoUpload" data-i18n="labels.logoUpload"
+                >Upload Logo</label
+              >
+              <input
+                type="file"
+                id="logoUpload"
+                accept="image/png,image/jpeg,image/webp,image/svg+xml"
+              />
+              <small
+                id="logoFileName"
+                class="hint"
+                data-i18n="hints.logoNoneSelected"
+              >
+                No logo selected.
+              </small>
+
+              <label for="logoScale" data-i18n="labels.logoSize">Logo Size</label>
+              <div class="range-row">
+                <input type="range" id="logoScale" min="12" max="36" step="1" />
+                <output id="logoScaleValue">22%</output>
+              </div>
+
+              <label class="checkbox-row">
+                <input type="checkbox" id="logoBackgroundPlate" />
+                <span data-i18n="labels.logoBackgroundPlate">
+                  Keep a clear background under the logo
+                </span>
+              </label>
+
+              <button type="button" id="clearLogoBtn" class="btn tertiary-btn">
+                <span data-i18n="buttons.removeLogo">Remove Logo</span>
+              </button>
+            </fieldset>
+
+            <fieldset class="control-section">
+              <legend data-i18n="legend.caption">Caption Below QR</legend>
+
+              <label for="captionText" data-i18n="labels.captionText"
+                >Caption Text</label
+              >
+              <textarea
+                id="captionText"
+                rows="2"
+                placeholder="Scan to view our spring collection"
+                data-i18n-placeholder="placeholders.captionText"
+              ></textarea>
+
+              <label for="captionFont" data-i18n="labels.captionFont"
+                >Font Family</label
+              >
+              <select id="captionFont">
+                <option value="jakarta">Plus Jakarta Sans</option>
+                <option value="space">Space Grotesk</option>
+                <option value="outfit">Outfit</option>
+                <option value="merriweather">Merriweather</option>
+                <option value="jetbrains">JetBrains Mono</option>
+              </select>
+
+              <div class="split-grid">
+                <div>
+                  <label for="captionColor" data-i18n="labels.captionColor"
+                    >Text Color</label
+                  >
+                  <input type="color" id="captionColor" />
+                </div>
+                <div>
+                  <label for="captionWeight" data-i18n="labels.captionWeight"
+                    >Text Weight</label
+                  >
+                  <select id="captionWeight">
+                    <option value="400" data-i18n="options.weight.regular">
+                      Regular
+                    </option>
+                    <option value="500" data-i18n="options.weight.medium">
+                      Medium
+                    </option>
+                    <option value="600" data-i18n="options.weight.semiBold">
+                      Semi Bold
+                    </option>
+                    <option value="700" data-i18n="options.weight.bold">Bold</option>
+                  </select>
+                </div>
+              </div>
+
+              <label for="captionSize" data-i18n="labels.captionSize"
+                >Font Size</label
+              >
+              <div class="range-row">
+                <input
+                  type="range"
+                  id="captionSize"
+                  min="12"
+                  max="56"
+                  step="1"
+                />
+                <output id="captionSizeValue">22 px</output>
+              </div>
+
+              <label for="captionSpacing" data-i18n="labels.captionSpacing"
+                >Space Above Caption</label
+              >
+              <div class="range-row">
+                <input
+                  type="range"
+                  id="captionSpacing"
+                  min="4"
+                  max="48"
+                  step="1"
+                />
+                <output id="captionSpacingValue">18 px</output>
+              </div>
+
+              <label for="captionAlign" data-i18n="labels.captionAlign"
+                >Text Alignment</label
+              >
+              <select id="captionAlign">
+                <option value="center" data-i18n="options.align.center">
+                  Center
+                </option>
+                <option value="left" data-i18n="options.align.left">Left</option>
+                <option value="right" data-i18n="options.align.right">Right</option>
+              </select>
+            </fieldset>
+
+            <div class="action-grid">
+              <button type="button" id="saveProjectBtn" class="btn primary-btn">
+                <span data-i18n="buttons.saveProject">Save Project</span>
+              </button>
+              <button type="button" id="resetBtn" class="btn secondary-btn">
+                <span data-i18n="buttons.reset">Reset</span>
+              </button>
+              <button type="button" id="downloadPngBtn" class="btn secondary-btn">
+                <span data-i18n="buttons.downloadPng">Download PNG</span>
+              </button>
+              <button type="button" id="downloadPdfBtn" class="btn secondary-btn">
+                <span data-i18n="buttons.downloadPdf">Download PDF</span>
+              </button>
+            </div>
+
+            <div class="share-grid">
+              <button type="button" id="exportProjectBtn" class="btn share-btn">
+                <span data-i18n="buttons.exportProject">Export .enderqr</span>
+              </button>
+              <button type="button" id="importProjectBtn" class="btn share-btn">
+                <span data-i18n="buttons.importProject">Import .enderqr</span>
+              </button>
+            </div>
+            <input
+              id="importProjectInput"
+              type="file"
+              accept=".enderqr,application/json,.json"
+              class="hidden"
+            />
+          </form>
+        </section>
+
+        <section class="panel preview-panel" aria-labelledby="previewHeading">
+          <div class="panel-title-row">
+            <h2 id="previewHeading" data-i18n="sections.preview">Live Preview</h2>
+            <span id="scanabilityBadge" class="badge safe">Scan-ready</span>
+          </div>
+
+          <div class="preview-stage">
+            <div id="previewComposition" class="preview-composition">
+              <div id="qrContainer" class="qr-container"></div>
+              <p id="qrPlaceholder" class="qr-placeholder" data-i18n="preview.placeholder">
+                Enter content to generate a QR code.
+              </p>
+              <p id="captionPreview" class="caption-preview"></p>
+            </div>
+          </div>
+
+          <p class="hint" data-i18n="hints.previewTip">
+            Tip: Keep strong contrast and avoid oversized logos for better scanner
+            compatibility.
+          </p>
+        </section>
+      </main>
+
+      <section class="panel saved-panel" aria-labelledby="savedHeading">
+        <div class="saved-toolbar">
+          <div>
+            <h2 id="savedHeading" data-i18n="sections.saved">Saved Projects</h2>
+            <p class="hint" data-i18n="hints.savedStorage">
+              Stored locally in your browser via localStorage.
+            </p>
+          </div>
+          <div class="saved-tools">
+            <label class="sr-only" for="savedSearch" data-i18n="labels.searchSaved">
+              Search saved projects
+            </label>
+            <input
+              id="savedSearch"
+              type="search"
+              placeholder="Search projects..."
+              data-i18n-placeholder="placeholders.searchProjects"
+            />
+            <span id="savedCount" class="saved-count">0 projects</span>
+          </div>
+        </div>
+        <div id="savedProjectsGrid" class="saved-grid"></div>
+      </section>
+    </div>
+
+    <div id="toastContainer" class="toast-container" aria-live="polite"></div>
+
+    <template id="savedCardTemplate">
+      <article class="saved-card">
+        <div class="thumb-wrap">
+          <img class="saved-thumb" alt="Saved project preview" />
+        </div>
+        <div class="saved-body">
+          <h3 class="saved-name"></h3>
+          <p class="saved-meta"></p>
+          <div class="saved-actions">
+            <button type="button" class="mini-btn" data-action="load">Load</button>
+            <button type="button" class="mini-btn" data-action="png">PNG</button>
+            <button type="button" class="mini-btn" data-action="pdf">PDF</button>
+            <button type="button" class="mini-btn danger" data-action="delete">
+              Delete
+            </button>
+          </div>
+        </div>
+      </article>
+    </template>
+  </body>
+</html>
